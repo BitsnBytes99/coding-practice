@@ -1,0 +1,67 @@
+#include <iostream>
+#include <climits>
+using namespace std;
+
+#define INF INT_MAX
+#define N 5 // Number of vertices (adjust as needed)
+
+// Function to find the vertex with the smallest key value that is not yet included in the MST
+int findMinKey(int key[], bool included[], int n) {
+    int minKey = INF, minIndex;
+    for (int i = 0; i < n; i++) {
+        if (!included[i] && key[i] < minKey) {
+            minKey = key[i];
+            minIndex = i;
+        }
+    }
+    return minIndex;
+}
+
+// Prim's Algorithm
+void primsAlgorithm(int graph[N][N], int n) {
+    int parent[N];        // Array to store the MST
+    int key[N];           // Key values to pick the minimum weight edge
+    bool included[N];     // To track vertices included in the MST
+
+    // Initialize key values as infinity and included[] as false
+    for (int i = 0; i < n; i++) {
+        key[i] = INF;
+        included[i] = false;
+    }
+
+    key[0] = 0;        // Start from the first vertex
+    parent[0] = -1;    // The first node is the root of the MST
+
+    for (int count = 0; count < n - 1; count++) {
+        int u = findMinKey(key, included, n); // Pick the minimum key vertex
+        included[u] = true;                  // Include it in the MST
+
+        // Update key values and parent indices of adjacent vertices
+        for (int v = 0; v < n; v++) {
+            if (graph[u][v] && !included[v] && graph[u][v] < key[v]) {
+                key[v] = graph[u][v];
+                parent[v] = u;
+            }
+        }
+    }
+
+    // Print the MST
+    cout << "Edge   Weight\n";
+    for (int i = 1; i < n; i++) {
+        cout << parent[i] << " - " << i << "    " << graph[parent[i]][i] << "\n";
+    }
+}
+
+int main() {
+    // Adjacency matrix representation of the graph
+    int graph[N][N] = {
+        {0, 2, 0, 6, 0},
+        {2, 0, 3, 8, 5},
+        {0, 3, 0, 0, 7},
+        {6, 8, 0, 0, 9},
+        {0, 5, 7, 9, 0}
+    };
+
+    primsAlgorithm(graph, N);
+    return 0;
+}

@@ -1,0 +1,97 @@
+#include <iostream>
+#include <climits> // For INT16_MAX
+#include <vector>
+using namespace std;
+
+const int n = 6; // Number of cities
+int graph[10][10] = {
+    {0, 4, 0, 6, 0, 8},
+    {4, 0, 2, 5, 0, 7},
+    {0, 2, 0, 3, 9, 0},
+    {6, 5, 3, 0, 4, 0},
+    {0, 0, 9, 4, 0, 1},
+    {8, 7, 0, 0, 1, 0},
+};
+
+int dp[1 << n][n];       // DP table
+int parent[1 << n][n];   // To track the path
+const int VISITED_ALL = (1 << n) - 1; // All cities visited mask
+
+int TSP(int mask, int pos) {
+    // Base case: If all cities are visited
+    if (mask == VISITED_ALL) {
+        return graph[pos][0] == 0 ? INT16_MAX : graph[pos][0];
+    }
+
+    // Lookup in DP table
+    if (dp[mask][pos] != -1) {
+        return dp[mask][pos];
+    }
+
+    int ans = INT16_MAX; // Initialize to a large value
+    int bestCity = -1; // To track the next city in the optimal path
+
+    // Try to go to unvisited cities
+    for (int city = 0; city < n; city++) {
+        // If city is not visited and there is an edge
+        if ((mask & (1 << city)) == 0 && graph[pos][city] != 0) {
+            int newAns = graph[pos][city] + TSP(mask | (1 << city), city);
+            if (newAns < ans) {
+                ans = newAns;
+                bestCity = city; // Update the best city
+            }
+        }
+    }
+
+    // Store the result in DP table and the next city in the path
+    parent[mask][pos] = bestCity;
+    return dp[mask][pos] = ans;
+}
+
+void printPath(int start) {
+    int mask = 1 << start;
+    int pos = start;
+
+    vector<int> path;
+    path.push_back(start); // Start from the initial city
+
+    while (true) {
+        int nextCity = parent[mask][pos];
+        if (nextCity == -1) break; // If no next city, we are done
+        path.push_back(nextCity);
+        mask |= (1 << nextCity); // Mark the city as visited
+        pos = nextCity;
+    }
+
+    path.push_back(start); // Return to the starting city
+
+    // Print the path
+    cout << "Path: ";
+    for (int city : path) {
+        cout << city << " ";
+    }
+    cout << endl;
+}
+
+int main() {
+    // Initialize DP table with -1 and parent table with -1
+    for (int i = 0; i < (1 << n); i++) {
+        for (int j = 0; j < n; j++) {
+            dp[i][j] = -1;
+            parent[i][j] = -1;
+        }
+    }
+
+    // Start TSP from city 0 with initial mask 1 (city 0 visited)
+    int result = TSP(1, 0);
+
+    // Check if a valid path exists
+    if (result >= INT16_MAX) {
+        cout << "No valid TSP path exists." << endl;
+    } else {
+        cout << "Minimum weight of TSP: " << result << endl;
+        printPath(0); // Print the optimal path
+    }
+
+    return 0;
+}

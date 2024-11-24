@@ -1,0 +1,349 @@
+#include <iostream>
+#include <queue>
+#include <stack>
+using namespace std;
+
+// Node structure for the BST
+struct Node
+{
+    int data;
+    Node *left;
+    Node *right;
+
+    Node(int val) : data(val), left(nullptr), right(nullptr) {}
+};
+
+// BST class encapsulating the tree operations
+class BST
+{
+private:
+    Node *root;
+
+    // Recursive helper function to insert a value into the BST
+    Node *insertRE(Node *node, int val)
+    {
+        if (node == nullptr)
+        {
+            return new Node(val);
+        }
+        if (val < node->data)
+        {
+            node->left = insertRE(node->left, val);
+        }
+        else
+        {
+            node->right = insertRE(node->right, val);
+        }
+        return node;
+    }
+
+    // Recursive helper function to search for a value in the BST
+    bool search(Node *node, int val) const
+    {
+        if (node == nullptr)
+        {
+            return false;
+        }
+        if (node->data == val)
+        {
+            return true;
+        }
+        if (val < node->data)
+        {
+            return search(node->left, val);
+        }
+        else
+        {
+            return search(node->right, val);
+        }
+    }
+
+    // In-order traversal
+    void inorder(Node *node) const
+    {
+        if (node == nullptr)
+        {
+            return;
+        }
+        inorder(node->left);
+        cout << node->data << " ";
+        inorder(node->right);
+    }
+
+    // Pre-order traversal
+    void preorder(Node *node) const
+    {
+        if (node == nullptr)
+        {
+            return;
+        }
+        cout << node->data << " ";
+        preorder(node->left);
+        preorder(node->right);
+    }
+
+    // Post-order traversal
+    void postorder(Node *node) const
+    {
+        if (node == nullptr)
+        {
+            return;
+        }
+        postorder(node->left);
+        postorder(node->right);
+        cout << node->data << " ";
+    }
+
+    // Level-order traversal
+    void levelOrderTraversal(Node *root)
+    {
+        if (root == NULL)
+        {
+            return;
+        }
+
+        queue<Node *> q;
+        q.push(root);
+        q.push(NULL);
+
+        while (!q.empty())
+        {
+            Node *temp = q.front();
+            q.pop();
+
+            if (temp == NULL)
+            {
+                cout << endl;
+                if (!q.empty())
+                {
+                    q.push(NULL);
+                }
+            }
+            else
+            {
+                cout << temp->data << " ";
+                if (temp->left)
+                {
+                    q.push(temp->left);
+                }
+                if (temp->right)
+                {
+                    q.push(temp->right);
+                }
+            }
+        }
+    }
+
+    // Height of tree
+    int Height(Node *root)
+    {
+        if (root == NULL)
+        {
+            return 0;
+        }
+        int left_height = Height(root->left);
+        int right_height = Height(root->right);
+        int Ans = max(left_height, right_height) + 1;
+        return Ans;
+    }
+
+    // Function to find the minimum value node in the subtree rooted at a given node
+    Node *minValueNode(Node *node)
+    {
+        Node *current = node;
+        while (current && current->left != nullptr)
+        {
+            current = current->left;
+        }
+        return current;
+    }
+
+    // Recursive helper function to delete a node from the BST
+    Node *deleteNode(Node *root, int val)
+    {
+        // Base case
+        if (root == nullptr)
+            return root;
+
+        // If the value to be deleted is smaller than the root's value,
+        // then it lies in the left subtree
+        if (val < root->data)
+            root->left = deleteNode(root->left, val);
+
+        // If the value to be deleted is greater than the root's value,
+        // then it lies in the right subtree
+        else if (val > root->data)
+            root->right = deleteNode(root->right, val);
+
+        // If value is the same as the root's value, then this is the node to be deleted
+        else
+        {
+            // Node with only one child or no child
+            if (root->left == nullptr)
+            {
+                Node *temp = root->right;
+                delete root;
+                return temp;
+            }
+            else if (root->right == nullptr)
+            {
+                Node *temp = root->left;
+                delete root;
+                return temp;
+            }
+
+            // Node with two children: Get the inorder successor (smallest in the right subtree)
+            Node *temp = minValueNode(root->right);
+
+            // Copy the inorder successor's content to this node
+            root->data = temp->data;
+
+            // Delete the inorder successor
+            root->right = deleteNode(root->right, temp->data);
+        }
+        return root;
+    }
+
+    // Iterative Inorder traversal
+    void InorderIterative()
+    {
+        if (root == NULL)
+            return;
+        stack<Node *> stk;
+        Node *current = root;
+
+        while (!stk.empty() || current != NULL)
+        {
+            while ((current != NULL))
+            {
+                stk.push(current);
+                current = current->left;
+            }
+            current = stk.top();
+            stk.pop();
+            cout << current->data << " ";
+
+            current = current->right;
+        }
+        cout << endl;
+    }
+
+    // Iterative Preorder traversal
+    void PreorderIterative()
+    {
+        if (root == NULL)
+            return;
+        stack<Node *> stk;
+        stk.push(root);
+
+        while (!stk.empty())
+        {
+            Node *current = stk.top();
+            stk.pop();
+            cout << current->data << " ";
+
+            if (current->right)
+                stk.push(current->right);
+            if (current->left)
+                stk.push(current->left);
+        }
+        cout << endl;
+    }
+
+    // Iterative Postorder traversal
+    void PostorderIterative()
+    {
+        if (root == NULL)
+            return;
+
+        stack<Node *> stk1, stk2;
+        stk1.push(root);
+
+        while (!stk1.empty())
+        {
+            Node *current = stk1.top();
+            stk1.pop();
+            stk2.push(current);
+
+            if (current->left)
+                stk1.push(current->left);
+            if (current->right)
+                stk1.push(current->right);
+        }
+
+        while (!stk2.empty())
+        {
+            cout << stk2.top()->data << " ";
+            stk2.pop();
+        }
+        cout << endl;
+    }
+
+public:
+    BST() : root(nullptr) {}
+
+    // Function to insert a value into the BST
+    void insert(int val)
+    {
+        root = insertRE(root, val);
+    }
+
+    // Function to search for a value in the BST
+    bool search(int val) const
+    {
+        return search(root, val);
+    }
+
+    // Function to delete a value from the BST
+    void deleteValue(int val)
+    {
+        root = deleteNode(root, val);
+    }
+
+    // Display Functions
+    void displayInorder() const { inorder(root); cout << endl; }
+    void displayPreorder() const { preorder(root); cout << endl; }
+    void displayPostorder() const { postorder(root); cout << endl; }
+    void displayLevelorder() { levelOrderTraversal(root); }
+    int displayHeight() { return Height(root); }
+    void displayInorderIterative() { InorderIterative(); }
+    void displayPreorderIterative() { PreorderIterative(); }
+    void displayPostorderIterative() { PostorderIterative(); }
+};
+
+int main()
+{
+    BST tree;
+
+    // Inserting values into the BST
+    tree.insert(70);
+    tree.insert(40);
+    tree.insert(45);
+    tree.insert(5);
+    tree.insert(90);
+    tree.insert(100);
+    tree.insert(80);
+    tree.insert(44);
+    tree.insert(1);
+
+    // Displaying the BST using different traversals
+    cout << "In-order: ";
+    tree.displayInorder();
+
+    cout << "Pre-order (Recursive): ";
+    tree.displayPreorder();
+
+    cout << "Post-order (Recursive): ";
+    tree.displayPostorder();
+
+    cout << "In-order (Iterative): ";
+    tree.displayInorderIterative();
+
+    cout << "Pre-order (Iterative): ";
+    tree.displayPreorderIterative();
+
+    cout << "Post-order (Iterative): ";
+    tree.displayPostorderIterative();
+
+    return 0;
+}
